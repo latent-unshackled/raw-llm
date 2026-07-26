@@ -553,8 +553,9 @@ USER QUERY: ${query}`;
         };
       } else if (provider === "openrouter") {
   url = "https://openrouter.ai/api/v1/chat/completions";
-  headers["Authorization"] = `Bearer ${apiKey}`;  // ← Use real key
-  headers["Content-Type"] = "application/json";
+  headers["Authorization"] = `Bearer ${apiKey}`;
+  headers["HTTP-Referer"] = "https://raw-llm.onrender.com";  // ← This is important!
+  headers["X-Title"] = "Raw LLM Research";
   body = {
     model: model,
     messages: processedMessages,
