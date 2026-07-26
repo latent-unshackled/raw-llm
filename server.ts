@@ -552,23 +552,23 @@ USER QUERY: ${query}`;
           stream: wantsStream,
         };
       } else if (provider === "openrouter") {
+  // TEMPORARY - hardcode to test
+  const testKey = "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";
+  
+  console.log("Using hardcoded key for testing");
+  
   url = "https://openrouter.ai/api/v1/chat/completions";
-  headers = {
-    "Authorization": `Bearer ${apiKey}`,
-    "Content-Type": "application/json"
-  };
-  // NO HTTP-Referer or X-Title (since curl works without them!)
+  headers["Authorization"] = `Bearer ${testKey}`;
+  headers["Content-Type"] = "application/json";
+  // Remove HTTP-Referer and X-Title for now
   body = {
-    model: "deepseek/deepseek-chat",  // Hardcode to test
-    messages: [
-      { role: "user", content: "Test!" }
-    ],
-    temperature: 0.7,
-    max_tokens: 1000,
-    stream: false  // Set to false for testing
+    model: "deepseek/deepseek-chat",
+    messages: processedMessages,
+    temperature: researchTemp,
+    max_tokens: researchMaxTokens,
+    stream: wantsStream,
   };
-}
-        else if (provider === "together") {
+} else if (provider === "together") {
         url = "https://api.together.xyz/v1/chat/completions";
         headers["Authorization"] = `Bearer ${apiKey}`;
         body = {
