@@ -683,7 +683,7 @@ Persona:
         return fullText;
       };
 
-      // KEY DEBUG: Hardcoded for testing
+     
 console.log("=== USING HARDCODED KEY FOR TESTING ===");
 const currentKey = "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";
 
