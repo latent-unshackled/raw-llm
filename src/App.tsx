@@ -595,9 +595,7 @@ Persona:
         }
       });
 
-      // REPLACE THIS ENTIRE BLOCK (around lines 250-330):
-
-let keysArray: string[] = [];
+     let keysArray: string[] = [];
 const customSrc = (settings.customSources || []).find(s => s.id === resolvedProvider);
 if (customSrc) {
   const rawKeys = customSrc.keys && customSrc.keys.length > 0 ? customSrc.keys : (customSrc.apiKey ? [customSrc.apiKey] : []);
@@ -610,14 +608,15 @@ if (customSrc) {
   keysArray = pkConfig ? pkConfig.keys.filter(k => k && k.trim().length > 0) : [];
 }
 
-// ⚠️ COMMENT OUT OR REMOVE THIS CHECK:
-// if (keysArray.length === 0) {
-//   throw new Error(`No active keys configured for provider [${resolvedProvider}]. Save keys in settings.`);
-// }
+// --- GET KEY FROM SETTINGS (NO MORE HARDCODE) ---
+console.log("Getting API key for provider:", resolvedProvider);
+const currentKey = getApiKeyForRequest(resolvedProvider);
 
-// --- HARDCODED KEY SECTION ---
-console.log("=== USING HARDCODED KEY FOR TESTING ===");
-const currentKey = "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";
+if (!currentKey) {
+  throw new Error(`No API key found for provider: ${resolvedProvider}. Please add your key in Settings.`);
+}
+
+console.log("API key found, first 10 chars:", currentKey.substring(0, 10) + "...");
 
 aiMessageId = `msg_${Date.now()}_ai`;
 const placeholderMessage: Message = {
@@ -690,10 +689,12 @@ const streamChatCompletion = async (bodyData: any): Promise<string> => {
   return fullText;
 };
 
+let success = false;
+
 try {
   let bodyData: any = {
     provider: resolvedProvider,
-    apiKey: currentKey,  // ← HARDCODED KEY
+    apiKey: currentKey,  // ← Uses the key from settings
     model: resolvedModel,
     messages: mainPayload,
     temperature: 0.7,
@@ -711,13 +712,18 @@ try {
   }
 
   responseText = await streamChatCompletion(bodyData);
+  success = true;
 } catch (e: any) {
   if (e.name === 'AbortError' || e.message?.includes('aborted')) {
     console.log("Stream generation aborted by user.");
   } else {
-    console.error("Error with hardcoded key:", e);
+    console.error("Error with API key:", e);
     throw e;
   }
+}
+
+if (!success) {
+  throw new Error(`Failed with API key. Check if key is valid.`);
 }
 
       finalizeStreamedMessage(aiMessageId, responseText, finalThought, resolvedProvider, resolvedModel, isUnfilteredActive);
