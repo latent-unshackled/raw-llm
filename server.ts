@@ -552,18 +552,23 @@ USER QUERY: ${query}`;
           stream: wantsStream,
         };
       } else if (provider === "openrouter") {
-        url = "https://openrouter.ai/api/v1/chat/completions";
-        headers["Authorization"] = `Bearer ${apiKey}`;
-        headers["HTTP-Referer"] = "https://github.com";
-        headers["X-Title"] = "Raw LLM Proxy Client";
-        body = {
-          model,
-          messages: processedMessages,
-          temperature: researchTemp,
-          max_tokens: researchMaxTokens,
-          stream: wantsStream,
-        };
-      } else if (provider === "together") {
+  url = "https://openrouter.ai/api/v1/chat/completions";
+  headers = {
+    "Authorization": `Bearer ${apiKey}`,
+    "Content-Type": "application/json"
+  };
+  // NO HTTP-Referer or X-Title (since curl works without them!)
+  body = {
+    model: "deepseek/deepseek-chat",  // Hardcode to test
+    messages: [
+      { role: "user", content: "Test!" }
+    ],
+    temperature: 0.7,
+    max_tokens: 1000,
+    stream: false  // Set to false for testing
+  };
+}
+        else if (provider === "together") {
         url = "https://api.together.xyz/v1/chat/completions";
         headers["Authorization"] = `Bearer ${apiKey}`;
         body = {
