@@ -51,7 +51,7 @@ Try it instantly: **[https://raw-llm.onrender.com/](https://raw-llm.onrender.com
 
 ```bash
 # Clone the repository
-git clone https://github.com/latent-unshackled/raw-llm
+git clone https://github.com/latent-unshackled/raw-llm.git
 cd raw-llm
 
 # Install dependencies
