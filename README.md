@@ -1,8 +1,16 @@
 # Raw LLM
 
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=for-the-badge&logo=render)](https://raw-llm.onrender.com/)
+
 **Unfiltered, direct access to LLM providers — for research and testing purposes.**
 
 Raw LLM is an open-source research tool that provides unfiltered, direct access to various LLM providers (Mistral, OpenRouter, Together AI, Anthropic, and custom endpoints). It acts as a local proxy that connects your browser directly to LLM APIs without any filtering, moderation, or prompt rewriting on our end.
+
+## 🚀 Live Demo
+
+Try it instantly: **[https://raw-llm.onrender.com/](https://raw-llm.onrender.com/)**
+
+> **Note:** The live demo runs on a free tier. All data stays in your browser's local storage.
 
 > ⚠️ **Important:** This tool is designed for **research and educational purposes only**. By using this software, you agree to take full responsibility for your actions and to use it only in compliance with applicable laws and regulations. **Do not use against production systems without authorization.**
 
@@ -43,7 +51,7 @@ Raw LLM is an open-source research tool that provides unfiltered, direct access 
 
 ```bash
 # Clone the repository
-git clone https://github.com/latent-unshackled/raw-llm.git
+git clone [https://github.com/latent-unshackled/raw-llm.git](https://github.com/latent-unshackled/raw-llm)
 cd raw-llm
 
 # Install dependencies
