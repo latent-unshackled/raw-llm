@@ -552,18 +552,18 @@ USER QUERY: ${query}`;
           stream: wantsStream,
         };
       } else if (provider === "openrouter") {
-  url = "https://openrouter.ai/api/v1/chat/completions";
-  headers["Authorization"] = `Bearer ${apiKey}`;
-  headers["HTTP-Referer"] = "https://raw-llm.onrender.com";  // ← This is important!
-  headers["X-Title"] = "Raw LLM Research";
-  body = {
-    model: model,
-    messages: processedMessages,
-    temperature: researchTemp,
-    max_tokens: researchMaxTokens,
-    stream: wantsStream,
-  };
-} else if (provider === "together") {
+        url = "https://openrouter.ai/api/v1/chat/completions";
+        headers["Authorization"] = `Bearer ${apiKey}`;
+        headers["HTTP-Referer"] = "https://raw-llm.onrender.com";
+        headers["X-Title"] = "Raw LLM Researcht";
+        body = {
+          model,
+          messages: processedMessages,
+          temperature: researchTemp,
+          max_tokens: researchMaxTokens,
+          stream: wantsStream,
+        };
+      } else if (provider === "together") {
         url = "https://api.together.xyz/v1/chat/completions";
         headers["Authorization"] = `Bearer ${apiKey}`;
         body = {
