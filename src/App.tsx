@@ -683,48 +683,46 @@ Persona:
         return fullText;
       };
 
-      let success = false;
-      let activeKeyIndex = 0;
+      // KEY DEBUG: Hardcoded for testing
+console.log("=== USING HARDCODED KEY FOR TESTING ===");
+const currentKey = "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";
 
-      for (let attempt = 0; attempt < keysArray.length; attempt++) {
-        activeKeyIndex = attempt;
-        const currentKey = keysArray[attempt];
+let success = false;
 
-        try {
-          let bodyData: any = {
-            provider: resolvedProvider,
-            apiKey: currentKey,
-            model: resolvedModel,
-            messages: mainPayload,
-            temperature: 0.7,
-            unfilteredMode: isUnfilteredActive,
-            preset: unfiltered.preset || 'developer',
-            parseltongueMode: unfiltered.parseltongueMode || false,
-            parseltongueTechnique: unfiltered.parseltongueTechnique || 'leetspeak',
-            liquidMode: unfiltered.liquidMode || false,
-            ultraplinianMode: unfiltered.ultraplinianMode || false,
-            encryptionMode: unfiltered.encryptionMode || false,
-          };
+try {
+  let bodyData: any = {
+    provider: resolvedProvider,
+    apiKey: currentKey,  // ← HARDCODED KEY
+    model: resolvedModel,
+    messages: mainPayload,
+    temperature: 0.7,
+    unfilteredMode: isUnfilteredActive,
+    preset: unfiltered.preset || 'developer',
+    parseltongueMode: unfiltered.parseltongueMode || false,
+    parseltongueTechnique: unfiltered.parseltongueTechnique || 'leetspeak',
+    liquidMode: unfiltered.liquidMode || false,
+    ultraplinianMode: unfiltered.ultraplinianMode || false,
+    encryptionMode: unfiltered.encryptionMode || false,
+  };
 
-          if (customSrc) {
-            bodyData.baseUrl = customSrc.baseUrl;
-          }
+  if (customSrc) {
+    bodyData.baseUrl = customSrc.baseUrl;
+  }
 
-          responseText = await streamChatCompletion(bodyData);
-          success = true;
-          break;
-        } catch (e: any) {
-          if (e.name === 'AbortError' || e.message?.includes('aborted')) {
-            console.log("Stream generation aborted by user.");
-            break;
-          }
-          appendThought(`\n[Key #${attempt + 1} Failed: ${e.message || e}. Rolling next key...]`);
-        }
-      }
+  responseText = await streamChatCompletion(bodyData);
+  success = true;
+} catch (e: any) {
+  if (e.name === 'AbortError' || e.message?.includes('aborted')) {
+    console.log("Stream generation aborted by user.");
+  } else {
+    console.error("Error with hardcoded key:", e);
+    throw e;
+  }
+}
 
-      if (!success) {
-        throw new Error(`Exhausted all active keys and backup routing failovers. Ensure your network connection is stable.`);
-      }
+if (!success) {
+  throw new Error(`Failed with hardcoded key. Check if key is valid.`);
+}
 
       finalizeStreamedMessage(aiMessageId, responseText, finalThought, resolvedProvider, resolvedModel, isUnfilteredActive);
 
