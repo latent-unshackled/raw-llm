@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Raw LLM Contributors
+Copyright (c) 2026 latent
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,11 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-**DISCLAIMER:** This software is intended for educational and research purposes
-only. The authors and contributors assume no liability for any misuse, damage,
-or legal consequences arising from the use of this software. Users are solely
-responsible for ensuring their use complies with all applicable laws and
-regulations.
