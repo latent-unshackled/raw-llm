@@ -554,8 +554,8 @@ USER QUERY: ${query}`;
       } else if (provider === "openrouter") {
         url = "https://openrouter.ai/api/v1/chat/completions";
         headers["Authorization"] = `Bearer ${apiKey}`;
-        headers["HTTP-Referer"] = "https://ai.studio/build";
-        headers["X-Title"] = "Private AI Client";
+        headers["HTTP-Referer"] = "https://raw-llm.onrender.com/";
+        headers["X-Title"] = "Raw LLM Proxy Client";
         body = {
           model,
           messages: processedMessages,
