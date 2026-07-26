@@ -595,136 +595,133 @@ Persona:
         }
       });
 
-     let keysArray: string[] = [];
-const customSrc = (settings.customSources || []).find(s => s.id === resolvedProvider);
-if (customSrc) {
-  const rawKeys = customSrc.keys && customSrc.keys.length > 0 ? customSrc.keys : (customSrc.apiKey ? [customSrc.apiKey] : []);
-  keysArray = rawKeys.filter(k => k && k.trim().length > 0);
-  if (keysArray.length === 0) {
-    keysArray = ['no_key_required'];
-  }
-} else {
-  const pkConfig = providerKeys.find(pk => pk.provider === resolvedProvider);
-  keysArray = pkConfig ? pkConfig.keys.filter(k => k && k.trim().length > 0) : [];
-}
-
-// --- GET KEY FROM SETTINGS (NO MORE HARDCODE) ---
-console.log("Getting API key for provider:", resolvedProvider);
-const currentKey = getApiKeyForRequest(resolvedProvider);
-
-if (!currentKey) {
-  throw new Error(`No API key found for provider: ${resolvedProvider}. Please add your key in Settings.`);
-}
-
-console.log("API key found, first 10 chars:", currentKey.substring(0, 10) + "...");
-
-aiMessageId = `msg_${Date.now()}_ai`;
-const placeholderMessage: Message = {
-  id: aiMessageId,
-  role: "assistant",
-  content: "",
-  timestamp: new Date().toISOString()
-};
-setChats(prev =>
-  prev.map(c => c.id === activeChat.id ? { ...c, messages: [...c.messages, placeholderMessage] } : c)
-);
-setStreamingMessageId(aiMessageId);
-
-const streamChatCompletion = async (bodyData: any): Promise<string> => {
-  const controller = new AbortController();
-  abortControllerRef.current = controller;
-
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...bodyData, stream: true }),
-    signal: controller.signal
-  });
-
-  if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    throw new Error(errData.error || `HTTP Status ${res.status}`);
-  }
-  if (!res.body) {
-    throw new Error("No response stream available from server.");
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let fullText = "";
-  const msgId = aiMessageId as string;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-
-    const lines = buffer.split("\n");
-    buffer = lines.pop() || "";
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith("data:")) continue;
-      const payload = trimmed.slice(5).trim();
-      if (!payload || payload === "[DONE]") continue;
-
-      try {
-        const parsed = JSON.parse(payload);
-        const delta = parsed.choices?.[0]?.delta?.content;
-        if (delta) {
-          fullText += delta;
-          setChats(prev => prev.map(c =>
-            c.id === activeChat.id
-              ? { ...c, messages: c.messages.map(m => m.id === msgId ? { ...m, content: fullText } : m) }
-              : c
-          ));
+      let keysArray: string[] = [];
+      const customSrc = (settings.customSources || []).find(s => s.id === resolvedProvider);
+      if (customSrc) {
+        const rawKeys = customSrc.keys && customSrc.keys.length > 0 ? customSrc.keys : (customSrc.apiKey ? [customSrc.apiKey] : []);
+        keysArray = rawKeys.filter(k => k && k.trim().length > 0);
+        if (keysArray.length === 0) {
+          keysArray = ['no_key_required'];
         }
-      } catch {
-        // Ignore malformed SSE fragments
+      } else {
+        const pkConfig = providerKeys.find(pk => pk.provider === resolvedProvider);
+        keysArray = pkConfig ? pkConfig.keys.filter(k => k && k.trim().length > 0) : [];
       }
-    }
-  }
 
-  return fullText;
-};
+      if (keysArray.length === 0) {
+        throw new Error(`No active keys configured for provider [${resolvedProvider}]. Save keys in settings.`);
+      }
 
-let success = false;
+      aiMessageId = `msg_${Date.now()}_ai`;
+      const placeholderMessage: Message = {
+        id: aiMessageId,
+        role: "assistant",
+        content: "",
+        timestamp: new Date().toISOString()
+      };
+      setChats(prev =>
+        prev.map(c => c.id === activeChat.id ? { ...c, messages: [...c.messages, placeholderMessage] } : c)
+      );
+      setStreamingMessageId(aiMessageId);
 
-try {
-  let bodyData: any = {
-    provider: resolvedProvider,
-    apiKey: currentKey,  // ← Uses the key from settings
-    model: resolvedModel,
-    messages: mainPayload,
-    temperature: 0.7,
-    unfilteredMode: isUnfilteredActive,
-    preset: unfiltered.preset || 'developer',
-    parseltongueMode: unfiltered.parseltongueMode || false,
-    parseltongueTechnique: unfiltered.parseltongueTechnique || 'leetspeak',
-    liquidMode: unfiltered.liquidMode || false,
-    ultraplinianMode: unfiltered.ultraplinianMode || false,
-    encryptionMode: unfiltered.encryptionMode || false,
-  };
+      const streamChatCompletion = async (bodyData: any): Promise<string> => {
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
 
-  if (customSrc) {
-    bodyData.baseUrl = customSrc.baseUrl;
-  }
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...bodyData, stream: true }),
+          signal: controller.signal
+        });
 
-  responseText = await streamChatCompletion(bodyData);
-  success = true;
-} catch (e: any) {
-  if (e.name === 'AbortError' || e.message?.includes('aborted')) {
-    console.log("Stream generation aborted by user.");
-  } else {
-    console.error("Error with API key:", e);
-    throw e;
-  }
-}
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `HTTP Status ${res.status}`);
+        }
+        if (!res.body) {
+          throw new Error("No response stream available from server.");
+        }
 
-if (!success) {
-  throw new Error(`Failed with API key. Check if key is valid.`);
-}
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let fullText = "";
+        const msgId = aiMessageId as string;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith("data:")) continue;
+            const payload = trimmed.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(payload);
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) {
+                fullText += delta;
+                setChats(prev => prev.map(c =>
+                  c.id === activeChat.id
+                    ? { ...c, messages: c.messages.map(m => m.id === msgId ? { ...m, content: fullText } : m) }
+                    : c
+                ));
+              }
+            } catch {
+              // Ignore malformed SSE fragments
+            }
+          }
+        }
+
+        return fullText;
+      };
+
+      let success = false;
+      for (let attempt = 0; attempt < keysArray.length; attempt++) {
+        const currentKey = keysArray[attempt];
+        try {
+          let bodyData: any = {
+            provider: resolvedProvider,
+            apiKey: currentKey,
+            model: resolvedModel,
+            messages: mainPayload,
+            temperature: 0.7,
+            unfilteredMode: isUnfilteredActive,
+            preset: unfiltered.preset || 'developer',
+            parseltongueMode: unfiltered.parseltongueMode || false,
+            parseltongueTechnique: unfiltered.parseltongueTechnique || 'leetspeak',
+            liquidMode: unfiltered.liquidMode || false,
+            ultraplinianMode: unfiltered.ultraplinianMode || false,
+            encryptionMode: unfiltered.encryptionMode || false,
+          };
+
+          if (customSrc) {
+            bodyData.baseUrl = customSrc.baseUrl;
+          }
+
+          responseText = await streamChatCompletion(bodyData);
+          success = true;
+          break;
+        } catch (e: any) {
+          if (e.name === 'AbortError' || e.message?.includes('aborted')) {
+            break;
+          }
+          if (attempt === keysArray.length - 1) {
+            throw e;
+          }
+        }
+      }
+
+      if (!success) {
+        throw new Error(`Failed to receive response from provider. Check key validity and network connection.`);
+      }
 
       finalizeStreamedMessage(aiMessageId, responseText, finalThought, resolvedProvider, resolvedModel, isUnfilteredActive);
 
