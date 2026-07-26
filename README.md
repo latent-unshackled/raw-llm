@@ -43,7 +43,7 @@ Raw LLM is an open-source research tool that provides unfiltered, direct access 
 
 ```bash
 # Clone the repository
-git clone 
+git clone https://github.com/latent-unshackled/raw-llm.git
 cd raw-llm
 
 # Install dependencies
